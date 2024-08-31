@@ -11,13 +11,14 @@ contract EtherStaking {
         address user;
         uint256 amountStaked;
         uint256 duration;
+        uint256 startTime;
         uint256 reward;
         bool isComplete;
     }
 
     mapping(address => Stake[]) userStakes;
 
-    constructor() payable {
+    constructor() {
         owner = msg.sender;
     }
 
@@ -48,6 +49,7 @@ contract EtherStaking {
         newStake.user = msg.sender;
         newStake.amountStaked = msg.value;
         newStake.duration = _duration;
+        newStake.startTime = block.timestamp;
         newStake.reward = _reward;
         newStake.isComplete = false;
 
@@ -66,10 +68,9 @@ contract EtherStaking {
         Stake storage userStake = userStakes[msg.sender][_userStakeIndex];
         require(!userStake.isComplete, "Stake already completed");
 
-        uint256 stakingEndTime = userStakes[msg.sender][_userStakeIndex]
-            .duration *
-            1 days +
-            block.timestamp;
+        uint256 stakingEndTime = userStake.startTime +
+            userStake.duration *
+            1 days;
         require(
             block.timestamp >= stakingEndTime,
             "Staking period is not yet over"
